@@ -9,6 +9,7 @@ import ReturnPage from "./pages/ReturnPage";
 import KitsPage from "./pages/KitsPage";
 import ReportsPage from "./pages/ReportsPage";
 import UsersPage from "./pages/UsersPage";
+import TrackingPage from "./pages/TrackingPage";
 import "./App.css";
 
 function ProtectedRoute({ children, roles }) {
@@ -34,6 +35,7 @@ function AppRoutes() {
           <Route path="/checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
           <Route path="/return" element={<ProtectedRoute><ReturnPage /></ProtectedRoute>} />
           <Route path="/kits" element={<ProtectedRoute roles={["Manager", "Warehouse Staff", "Administrator"]}><KitsPage /></ProtectedRoute>} />
+          <Route path="/tracking" element={<ProtectedRoute roles={["Manager", "Administrator"]}><TrackingPage /></ProtectedRoute>} />
           <Route path="/reports" element={<ProtectedRoute roles={["Manager", "Administrator"]}><ReportsPage /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute roles={["Administrator"]}><UsersPage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to={user ? "/dashboard" : "/login"} />} />

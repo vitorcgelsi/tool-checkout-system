@@ -7,7 +7,7 @@ import sys
 import os
 
 # Add the backend module to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "backend", "tool_checkout_backend_sqlite"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "tool_checkout_backend_sqlite"))
 
 import sqlite3
 from flask import Flask, request, jsonify, g
@@ -359,6 +359,18 @@ def sync_location(tool_id):
         return error_response(str(e))
 
 
+@app.route("/api/tools/<tool_id>/tracking-status", methods=["GET"])
+def get_tracking_status(tool_id):
+    user = require_auth()
+    if not user:
+        return error_response("Not authenticated", 401)
+    try:
+        status = get_service().get_tool_tracking_status(user, tool_id)
+        return jsonify({"status": status})
+    except (AuthorizationError, NotFoundError) as e:
+        return error_response(str(e))
+
+
 @app.route("/api/tools/<tool_id>/tracking-history", methods=["GET"])
 def get_tracking_history(tool_id):
     user = require_auth()
@@ -428,8 +440,10 @@ def get_dashboard_stats():
             if t["tool_status"] == "Checked Out" and t["borrowed_by"] == user["user_id"]:
                 my_checkouts.append(t)
 
+    high_value_tracked = sum(1 for t in tools if t["is_high_value"] == 1 and t["requires_tracking"] == 1)
+
     return jsonify({
-        "stats": {"available": available, "checked_out": checked_out, "flagged": flagged, "maintenance": maintenance, "total": len(tools)},
+        "stats": {"available": available, "checked_out": checked_out, "flagged": flagged, "maintenance": maintenance, "total": len(tools), "high_value_tracked": high_value_tracked},
         "my_checkouts": my_checkouts,
     })
 

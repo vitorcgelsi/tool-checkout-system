@@ -4,6 +4,7 @@ const STATUS_COLORS = {
   Flagged: "badge-orange",
   "Under Maintenance": "badge-yellow",
   Missing: "badge-red",
+  "Under Investigation": "badge-red",
   Retired: "badge-gray",
 };
 

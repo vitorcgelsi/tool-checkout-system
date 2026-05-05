@@ -1,20 +1,19 @@
-import { createContext, useContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState } from "react";
 import { api } from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
     if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+      return JSON.parse(savedUser);
     }
-    setLoading(false);
-  }, []);
+    return null;
+  });
+  const loading = false;
 
   const login = async (userId, password) => {
     const data = await api.login(userId, password);
@@ -25,7 +24,11 @@ export function AuthProvider({ children }) {
   };
 
   const logout = async () => {
-    try { await api.logout(); } catch {}
+    try {
+      await api.logout();
+    } catch {
+      // Local sign-out should still clear the session if the API is unavailable.
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
