@@ -1,69 +1,106 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import StatusBadge from "../components/StatusBadge";
 
 export default function KitsPage() {
   const [kits, setKits] = useState([]);
+  const [selectedResult, setSelectedResult] = useState(null);
   const [msg, setMsg] = useState("");
+  const [error, setError] = useState("");
 
-  const loadKits = () => api.getKits().then((d) => setKits(d.kits)).catch(() => {});
+  const loadKits = () => api.getKits().then((data) => setKits(data.kits)).catch((err) => setError(err.message));
   useEffect(() => { loadKits(); }, []);
 
   const handleVerify = async (kitId) => {
+    setMsg("");
+    setError("");
     try {
       const data = await api.verifyKit(kitId);
-      const r = data.result;
-      if (r.all_available) {
-        setMsg(`Kit "${r.kit_name}" is ready for dispatch. All items available.`);
-      } else {
-        setMsg(`Kit "${r.kit_name}" is NOT ready. Some tools are unavailable.`);
-      }
+      setSelectedResult(data.result);
+      setMsg(data.result.all_available
+        ? `${data.result.kit_name} is ready for dispatch.`
+        : `${data.result.kit_name} has missing or unavailable items.`);
       loadKits();
     } catch (err) {
-      setMsg(err.message);
+      setError(err.message);
     }
   };
 
   return (
     <div className="page">
-      <h2>Equipment Kit Management</h2>
-      <p className="subtitle">Prepare and verify job-based equipment kits</p>
+      <div className="page-header">
+        <div>
+          <h2>Kit Verification</h2>
+          <p className="subtitle">Confirm required equipment is present before dispatch to an event site</p>
+        </div>
+      </div>
 
-      {msg && <div className="alert">{msg}</div>}
+      {msg && <div className={selectedResult?.all_available ? "alert alert-success" : "alert alert-error"}>{msg}</div>}
+      {error && <div className="alert alert-error">{error}</div>}
 
       <div className="kits-grid">
         {kits.map((kit) => (
-          <div key={kit.kit_id} className={`card kit-card ${kit.all_available ? "kit-ready" : "kit-warning"}`}>
+          <article key={kit.kit_id} className={`card kit-card ${kit.all_available ? "kit-ready" : "kit-warning"}`}>
             <div className="kit-header">
-              <h3>{kit.kit_name}</h3>
-              <span className={kit.all_available ? "kit-icon-ok" : "kit-icon-warn"}>
-                {kit.all_available ? "✓" : "⚠"}
+              <div>
+                <h3>{kit.kit_name}</h3>
+                <p className="kit-id">{kit.kit_id} - {kit.tools.length} required items</p>
+              </div>
+              <span className={`badge ${kit.all_available ? "badge-green" : "badge-orange"}`}>
+                {kit.all_available ? "Ready" : "Issue"}
               </span>
             </div>
-            <p className="kit-id">Kit ID: {kit.kit_id}</p>
 
             <div className="kit-contents">
-              <strong>Kit Contents ({kit.tools.length} items)</strong>
-              {kit.tools.map((t) => (
-                <div key={t.tool_id} className="kit-tool-item">
-                  <span>{t.tool_name}</span>
-                  <StatusBadge status={t.tool_status} />
+              {kit.tools.map((tool) => (
+                <div key={tool.tool_id} className="kit-tool-item">
+                  <div>
+                    <strong>{tool.tool_name}</strong>
+                    <small>{tool.tool_id}</small>
+                  </div>
+                  <div className="kit-present">
+                    <span className={tool.tool_status === "Available" ? "presence-dot present" : "presence-dot missing"} />
+                    <StatusBadge status={tool.tool_status} />
+                  </div>
                 </div>
               ))}
             </div>
 
-            <p className="kit-status">
-              {kit.all_available ? "✓ All items available" : "⚠ Some item(s) unavailable"}
-            </p>
-
+            <div className="verification-note">
+              {kit.all_available ? "All required items are present and available." : "One or more items need review before dispatch."}
+            </div>
             <button className="btn btn-full btn-outline" onClick={() => handleVerify(kit.kit_id)}>
               Verify Kit
             </button>
-          </div>
+          </article>
         ))}
       </div>
 
-      {kits.length === 0 && <p>No kits found.</p>}
+      {selectedResult && (
+        <section className="card verification-result">
+          <div className="section-heading">
+            <h3>Verification Result</h3>
+            <span>{selectedResult.all_available ? "Ready" : "Issue flagged"}</span>
+          </div>
+          <div className="table-container flush-table">
+            <table>
+              <thead><tr><th>Tool ID</th><th>Required Item</th><th>Present Status</th><th>Notes</th></tr></thead>
+              <tbody>
+                {selectedResult.tools.map((tool) => (
+                  <tr key={tool.tool_id}>
+                    <td>{tool.tool_id}</td>
+                    <td>{tool.tool_name}</td>
+                    <td><StatusBadge status={tool.status} /></td>
+                    <td>{tool.status === "Available" ? "Ready for kit dispatch" : "Issue flag required"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {kits.length === 0 && <div className="empty-state">No kits found.</div>}
     </div>
   );
 }

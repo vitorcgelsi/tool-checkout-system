@@ -13,6 +13,7 @@ const NAV_ITEMS = {
     { to: "/checkout", label: "Check Out" },
     { to: "/return", label: "Return" },
     { to: "/kits", label: "Kits" },
+    { to: "/tracking", label: "Tracking" },
     { to: "/reports", label: "Reports" },
   ],
   "Warehouse Staff": [
@@ -27,6 +28,7 @@ const NAV_ITEMS = {
     { to: "/checkout", label: "Check Out" },
     { to: "/return", label: "Return" },
     { to: "/kits", label: "Kits" },
+    { to: "/tracking", label: "Tracking" },
     { to: "/reports", label: "Reports" },
     { to: "/users", label: "Users" },
   ],

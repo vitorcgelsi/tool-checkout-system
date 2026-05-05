@@ -86,6 +86,20 @@ export const api = {
     return handleResponse(res);
   },
 
+  // Tracking
+  async getTrackingStatus(toolId) {
+    const res = await fetch(`${API_BASE}/tools/${toolId}/tracking-status`, { headers: headers() });
+    return handleResponse(res);
+  },
+  async syncTracking(toolId) {
+    const res = await fetch(`${API_BASE}/tools/${toolId}/tracker/sync`, { method: "POST", headers: headers() });
+    return handleResponse(res);
+  },
+  async getTrackingHistory(toolId) {
+    const res = await fetch(`${API_BASE}/tools/${toolId}/tracking-history`, { headers: headers() });
+    return handleResponse(res);
+  },
+
   // Kits
   async getKits() {
     const res = await fetch(`${API_BASE}/kits`, { headers: headers() });
