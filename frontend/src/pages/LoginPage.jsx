@@ -6,6 +6,7 @@ export default function LoginPage() {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showRecoveryHelp, setShowRecoveryHelp] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -48,6 +49,23 @@ export default function LoginPage() {
 
             <button type="submit" className="btn btn-primary btn-full">Sign In</button>
           </form>
+
+          <div className="login-support">
+            <button
+              type="button"
+              className="login-support-link"
+              onClick={() => setShowRecoveryHelp((current) => !current)}
+            >
+              Forgot ID or password?
+            </button>
+            {showRecoveryHelp && (
+              <div className="login-support-panel">
+                <strong>Prototype account recovery</strong>
+                <p>If a user forgets their staff ID or password, they should contact an Administrator to confirm their account details or reset the password.</p>
+                <p>For assessment use, the demo accounts listed below can be used to access each role.</p>
+              </div>
+            )}
+          </div>
 
           <div className="demo-credentials">
             <p><strong>Demo Credentials</strong></p>
